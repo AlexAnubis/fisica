@@ -1,14 +1,21 @@
 import fisica.*;
 
+
+
 //palette
 color blue   = color(29, 178, 242);
 color brown  = color(166, 120, 24);
 color green  = color(74, 163, 57);
 color red    = color(224, 80, 61);
 color yellow = color(242, 215, 16);
+color white = color(255);
 
 //assets
 PImage redBird;
+PImage cloud;
+
+int x = 50;
+int b = 0;
 
 FPoly topPlatform; 
 FPoly bottomPlatform;
@@ -22,6 +29,7 @@ void setup() {
   
   //load resources
   redBird = loadImage("red-bird.png");
+
 
   //initialise world
   makeWorld();
@@ -94,6 +102,7 @@ void draw() {
   println("x: " + mouseX + " y: " + mouseY);
   background(blue);
 
+  cloud2();
   if (frameCount % 20 == 0) {  //Every 20 frames ...
     makeCircle();
     makeBlob();
@@ -102,6 +111,8 @@ void draw() {
   }
   world.step();  //get box2D to calculate all the forces and new positions
   world.draw();  //ask box2D to convert this world to processing screen coordinates and draw
+  cloud1();
+
 }
 
 
@@ -177,4 +188,36 @@ void makeBird() {
   bird.setFriction(1);
   bird.setRestitution(0.5);
   world.add(bird);
+}
+
+void cloud1() {
+  fill(255); 
+  noStroke();
+  ellipse(x+30, 200, 100, 60);
+  ellipse(x+20, 230, 100, 60);
+  ellipse(x-20, 215, 100, 60);
+  ellipse(x+70, 215, 100, 60);
+
+  x = x+3;
+  if (x > width) {
+  x = width*0;
+  }
+
+
+}
+
+void cloud2(){
+  fill(255); 
+  noStroke();
+  ellipse(b+330, 200, 200, 100);
+  ellipse(b+420, 250, 200, 100);
+
+  ellipse(b+470, 215, 200, 100);
+
+  b = b+1;
+  if (b-100 > width) {
+  b = width*0-300;
+  }
+
+
 }
