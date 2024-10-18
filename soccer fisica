@@ -1,0 +1,170 @@
+import fisica.*;
+
+color blue   = color(29, 178, 242);
+color green  = color(74, 163, 57);
+color white  = color(255);
+
+FWorld world;
+FCircle ball;
+FBox player1, player2;
+FBox leftGoal, rightGoal;
+FBox topBorder, bottomBorder, leftBorder, rightBorder;
+
+int playerSpeed = 10;
+float kickForce = 100;
+float ballFriction = 0.5;
+float damping = 0.95;
+
+int scorePlayer1 = 0;
+int scorePlayer2 = 0;
+
+void setup() {
+  fullScreen();
+  makeWorld();
+  makeBall();
+  makePlayer1();
+  makePlayer2();
+  makeLeftGoal();
+  makeRightGoal();
+  makeBorders();
+}
+
+void makeWorld() {
+  Fisica.init(this);
+  world = new FWorld();
+  world.setGravity(0, 0);
+}
+
+void makeBall() {
+  ball = new FCircle(20);
+  ball.setPosition(width/2, height/2);
+  ball.setFillColor(white);
+  ball.setRestitution(0.3);
+  ball.setFriction(ballFriction);
+  ball.setDensity(0.8);
+  ball.setDamping(damping);
+  world.add(ball);
+}
+
+void makePlayer1() {
+  player1 = new FBox(20, 80);
+  player1.setPosition(100, height/2);
+  player1.setFillColor(color(224, 80, 61));
+  player1.setDensity(5);
+  player1.setFriction(0.2);
+  world.add(player1);
+}
+
+void makePlayer2() {
+  player2 = new FBox(20, 80);
+  player2.setPosition(width - 100, height/2);
+  player2.setFillColor(color(166, 120, 24));
+  player2.setDensity(5);
+  player2.setFriction(0.2);
+  world.add(player2);
+}
+
+void makeLeftGoal() {
+  leftGoal = new FBox(10, 200);
+  leftGoal.setPosition(10, height/2);
+  leftGoal.setStatic(true);
+  leftGoal.setSensor(true);
+  world.add(leftGoal);
+}
+
+void makeRightGoal() {
+  rightGoal = new FBox(10, 200);
+  rightGoal.setPosition(width - 10, height/2);
+  rightGoal.setStatic(true);
+  rightGoal.setSensor(true);
+  world.add(rightGoal);
+}
+
+void makeBorders() {
+  topBorder = new FBox(width, 10);
+  topBorder.setPosition(width / 2, 5);
+  topBorder.setStatic(true);
+  world.add(topBorder);
+  
+  bottomBorder = new FBox(width, 10);
+  bottomBorder.setPosition(width / 2, height - 5);
+  bottomBorder.setStatic(true);
+  world.add(bottomBorder);
+  
+  leftBorder = new FBox(10, height);
+  leftBorder.setPosition(5, height / 2);
+  leftBorder.setStatic(true);
+  world.add(leftBorder);
+  
+  rightBorder = new FBox(10, height);
+  rightBorder.setPosition(width - 5, height / 2);
+  rightBorder.setStatic(true);
+  world.add(rightBorder);
+}
+
+void draw() {
+  background(green);
+  drawField();
+  world.step();
+  world.draw();
+  handlePlayerControls();
+  checkGoal();
+  checkKick(player1);
+  checkKick(player2);
+  drawScoreboard();
+}
+
+void drawField() {
+  stroke(white);
+  strokeWeight(5);
+  line(width/2, 0, width/2, height);
+  noFill();
+  ellipse(width/2, height/2, 200, 200);
+}
+
+void handlePlayerControls() {
+  if (keyPressed) {
+    if (key == 'w') player1.setPosition(player1.getX(), player1.getY() - playerSpeed);
+    if (key == 's') player1.setPosition(player1.getX(), player1.getY() + playerSpeed);
+    if (key == 'a') player1.setPosition(player1.getX() - playerSpeed, player1.getY());
+    if (key == 'd') player1.setPosition(player1.getX() + playerSpeed, player1.getY());
+    
+    if (keyCode == UP) player2.setPosition(player2.getX(), player2.getY() - playerSpeed);
+    if (keyCode == DOWN) player2.setPosition(player2.getX(), player2.getY() + playerSpeed);
+    if (keyCode == LEFT) player2.setPosition(player2.getX() - playerSpeed, player2.getY());
+    if (keyCode == RIGHT) player2.setPosition(player2.getX() + playerSpeed, player2.getY());
+  }
+}
+
+void checkGoal() {
+  if (ball.isTouchingBody(leftGoal)) {
+    scorePlayer2++;
+    resetBall();
+  } else if (ball.isTouchingBody(rightGoal)) {
+    scorePlayer1++;
+    resetBall();
+  }
+}
+
+void resetBall() {
+  ball.setVelocity(0, 0);
+  ball.setPosition(width/2, height/2);
+}
+
+void checkKick(FBox player) {
+  float distance = dist(player.getX(), player.getY(), ball.getX(), ball.getY());
+  if (distance < 60) {
+    float angle = atan2(ball.getY() - player.getY(), ball.getX() - player.getX());
+    float forceX = cos(angle) * kickForce;
+    float forceY = sin(angle) * kickForce;
+    ball.addImpulse(forceX, forceY);
+  }
+}
+
+void drawScoreboard() {
+  fill(255);
+  textAlign(CENTER, TOP);
+  textSize(32);
+  text("Player 1: " + scorePlayer1, width * 0.25, 20);
+  text("Player 2: " + scorePlayer2, width * 0.75, 20);
+}
